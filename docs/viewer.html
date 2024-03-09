@@ -12,12 +12,16 @@
 <h1>
     Data Viewer
 </h1>
+<div id="chartContainer"></div>
 <div id="container"></div>
 
 <script src="../common/js_objects/features.js"></script>
 <script src="../common/constants.js"></script>
 <script src="../common/utils.js"></script>
 <script src="js/display.js"></script>
+<script src="./charts/graphics.js"></script>
+<script src="./charts/math.js"></script>
+<script src="./charts/chart.js"></script>
 
 <script>
   const {samples, featureNames} = features
@@ -27,6 +31,23 @@
     const studentName = samples[0].student_name
     createRow(container, studentName, samples)
   }
+
+  const options = {
+    size: 500,
+    axesLabels: featureNames,
+    styles: utils.styles,
+    transparency: 0.7,
+    icon: 'image'
+  }
+
+  graphics.generateImages(utils.styles)
+
+  const chart = new Chart(
+    chartContainer,
+    samples,
+    options,
+    handleClick,
+  )
 </script>
 </body>
 </html>
