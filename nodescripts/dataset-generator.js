@@ -9,7 +9,7 @@ const canvas = createCanvas(400, 400)
 const ctx = canvas.getContext('2d')
 
 
-const fileNames = fs.readdirSync(constants.RAW_DIR)
+let fileNames = fs.readdirSync(constants.RAW_DIR)
 const samples = []
 let id = 1;
 fileNames.forEach(fileName => {
@@ -31,6 +31,8 @@ fileNames.forEach(fileName => {
 })
 
 fs.writeFileSync(constants.SAMPLES, JSON.stringify(samples))
+
+fs.writeFileSync(constants.SAMPLE_JS, `const samples=${JSON.stringify(samples)};`)
 
 
 function generateImageFile(outputFile, paths) {
