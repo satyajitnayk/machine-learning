@@ -8,11 +8,12 @@ const samples = JSON.parse(fs.readFileSync(constants.SAMPLES))
 for (const sample of samples) {
   const paths = JSON.parse(fs.readFileSync(`${constants.JSON_DIR}/${sample.id}.json`))
 
-  sample.point = [featuresFunctions.getPathCount(paths), featuresFunctions.getPointCount(paths)]
+  const functions = featuresFunctions.inUse.map(f => f.function);
+  sample.point = functions.map(f => f(paths));
 }
 
 
-const featureNames = ['Path Count', 'Point Count']
+const featureNames = featuresFunctions.inUse.map(f => f.name)
 
 fs.writeFileSync(constants.FEATURES, JSON.stringify({
   featureNames, samples: samples.map(s => {
