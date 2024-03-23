@@ -17,12 +17,15 @@
 </div>
 <div id="controlPanel">
     <button onclick="toggleInput()">Toggle Input</button>
+    <div id="statistics"></div>
 </div>
 <div id="chartContainer"></div>
 
 <div id="container"></div>
 
 <script src="../common/js_objects/features.js"></script>
+<script src="../common/js_objects/training.js"></script>
+<script src="../common/js_objects/testing.js"></script>
 <script src="../common/js_objects/minMax.js"></script>
 
 <script src="../common/constants.js"></script>
@@ -38,12 +41,45 @@
 <script src="./charts/chart.js"></script>
 
 <script>
-  const {samples, featureNames} = features
-  const groups = utils.groupBy(samples, 'student_id')
-  for (let student_id in groups) {
-    const samples = groups[student_id]
-    const studentName = samples[0].student_name
-    createRow(container, studentName, samples)
+  const {samples, featureNames} = features;
+  const trainingSamples = training.samples;
+  const testingSamples = testing.samples;
+
+  const k = 50;
+
+  let correctCount = 0;
+  let totalCount = 0;
+
+  for (let testSample of testingSamples) {
+    testSample.truth = testSample.label;
+    testSample.label = "?";
+    const {label} = classify(testSample.point);
+    testSample.label = label;
+    testSample.correct = testSample.label === testSample.truth;
+    totalCount++;
+    correctCount += testSample.correct ? 1 : 0;
+  }
+
+  statistics.innerHTML = `<b>ACCURACY</b><br>
+${correctCount}/${totalCount} (${utils.formatPercent(correctCount / totalCount)})`;
+
+  const trainingGroups = utils.groupBy(trainingSamples, 'student_id');
+  for (let student_id in trainingGroups) {
+    const samples = trainingGroups[student_id];
+    const studentName = samples[0].student_name;
+    createRow(container, studentName, samples);
+  }
+
+  const subtitle = document.createElement('h2');
+  subtitle.innerHTML = "TESTING";
+  container.appendChild(subtitle);
+
+
+  const testingGroups = utils.groupBy(testingSamples, 'student_id');
+  for (let student_id in testingGroups) {
+    const samples = testingGroups[student_id];
+    const studentName = samples[0].student_name;
+    createRow(container, studentName, samples);
   }
 
   const options = {
@@ -58,7 +94,7 @@
 
   const chart = new Chart(
     chartContainer,
-    samples,
+    trainingSamples,
     options,
     handleClick,
   )
@@ -66,6 +102,7 @@
   const sketchPad = new SketchPad(inputContainer, onDrawingUpdate)
   sketchPad.canvas.style.cssText +=
     "outline:10000px solid rgba(0,0,0,0.7);"
+  toggleInput();
 
   function onDrawingUpdate(paths) {
     const functions = featuresFunctions.inUse.map(f => f.function);
@@ -77,9 +114,9 @@
   }
 
   function classify(point) {
-    const samplePoints = samples.map(s => s.point)
-    const indices = utils.getNearest(point, samplePoints, 10);
-    const nearestSamples = indices.map(i => samples[i]);
+    const samplePoints = trainingSamples.map(s => s.point)
+    const indices = utils.getNearest(point, samplePoints, k);
+    const nearestSamples = indices.map(i => trainingSamples[i]);
     const labels = nearestSamples.map(s => s.label);
     const counts = {};
     for (const label of labels) {
