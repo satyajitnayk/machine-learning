@@ -1,4 +1,4 @@
-const utils = {}
+let utils = {}
 
 utils.styles = {
   car: {color: 'gray', text: '🚗'},
