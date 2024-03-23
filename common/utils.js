@@ -34,20 +34,15 @@ utils.groupBy = (objArray, key) => {
   return groups
 }
 
-utils.getNearest = (loc, points) => {
-  let minDist = Number.MAX_SAFE_INTEGER;
-  let nearestIndex = 0;
-
-  for (let i = 0; i < points.length; i++) {
-    const point = points[i];
-    const d = math.distance(loc, point);
-
-    if (d < minDist) {
-      minDist = d;
-      nearestIndex = i;
-    }
-  }
-  return nearestIndex;
+utils.getNearest = (loc, points, k = 1) => {
+  const obj = points.map((val, idx) => {
+    return {val, idx}
+  });
+  const sorted = obj.sort((a, b) => {
+    return utils.distance(loc, a.val) - utils.distance(loc, b.val);
+  });
+  const indices = sorted.map(obj => obj.idx);
+  return indices.slice(0, k);
 }
 
 utils.distance = (p1, p2) => {
@@ -75,7 +70,7 @@ utils.normalizePoints = (points, minMax) => {
       }
     }
   }
-  
+
   for (let i = 0; i < points.length; ++i) {
     for (let j = 0; j < dimensions; ++j) {
       points[i][j] = utils.invLerp(min[j], max[j], points[i][j]);
